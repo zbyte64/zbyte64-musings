@@ -1,31 +1,48 @@
-# Readable Components have simple properties
+# Predictable Components use explicit display flags
 
-* Redundant decisions should be moved into their own variables.
-* Larger expressions in the markup should serve to draw attention to important junctions
-* Descriptive variables are more readable than ternary expressions.
+Use explicit properties to control display modes.
+
+```javascript
+Card.propTypes = {
+  highContrast: PropTypes.bool,
+  darkMode: PropTypes.bool,
+  hover: PropTypes.bool,
+};
+```
+
+## Replaces
+
+* Checking the className to toggle display features.
+* Checking key or index to alternate display features.
 
 ## Why?
 
-The more syntax, spaces, and variables one views in a single glance the more effort is required in understanding a behavior.
+This makes controlling the behavior from the outside obvious.
+Inside the component the explicit variable names make it easier to follow what
+each mode entails.
+
+
+# Readable Components have intermediate variables
+
+* Redundant decisions should be moved into their own variables.
+* Larger expressions in the markup should serve to draw attention to important junctions
+* Use descriptive variable names
+
+## Why?
+
+Encourages your component to read like a recipe.
+A component may have allot of dependencies that has supporting logic.
+These preparatory steps are required but the specifics are not necessary for understanding the component as a whole.
+This prep-work can float above the return where everything gets packaged together.
+
 
 # Reusable Components support className
 
-Allows parent components to control placement.
-* width, height
-* grid-area
-* flex
-* margin
-
-Components should exclusivly control their own:
-* padding
-* internal margins
-* color
-* hover
-* fonts
-* grid-template
+Components should accept `className` as a property.
 
 
 ```Javascript
+// styled() wraps a component and injects css via className property
 // child component definition
 const ResponsiveCTA = styled.div`
     padding: 20px;
@@ -43,6 +60,23 @@ const LeftCTA = styled(ResponsiveCTA)`
   `;
 ```
 
+## Responsibilities
+
+Parent components should control placement with:
+* width, height
+* grid-area
+* flex
+* margin
+
+Components should exclusively control their own:
+* padding
+* internal margins
+* color
+* hover
+* fonts
+* grid-template
+
+
 ## Replaces
 
 * any other property for injecting css at the container level
@@ -53,19 +87,6 @@ const LeftCTA = styled(ResponsiveCTA)`
 Class names is already a robust pattern used everywhere.
 Seperating the concerns in this manner makes the component more predictable in other contexts.
 
-
-# Predictable Components use explicit display flags
-
-Display modes should be controlled with explicit properties.
-
-## Replaces
-
-* Checking the className to toggle display features.
-* Checking key or index to alternate display features.
-
-## Why?
-
-Explicit functionality should be interfaced explicitly.
 
 # Understandable Components use semaphores
 
@@ -84,7 +105,7 @@ const className = classNameSemaphore[primary][hover];
 
 ## Replaces
 
-* Nested if/else statements 
+* Nested if/else statements
 * Chained ternary expressions
 
 ## Why?
@@ -95,11 +116,10 @@ Not necessary if the decisions are one level deep.
 
 # Use factories to manage dependencies
 
-A function that returns components and simpler then a new component.
-
+Use functions to generate markup.
 
 ```javascript
-const listItems = children.map((x, i( => {<li key={i}>{x}</li>});
+const listItems = children.map((x, i( => {<li key={i}>{x}</li>})));
 ```
 
 ## Replaces
@@ -109,11 +129,7 @@ const listItems = children.map((x, i( => {<li key={i}>{x}</li>});
 
 ## Why?
 
-Encourages your component to read like a recipe.
-A component may have allot of dependencies that has supporting logic.
-These preperatory steps are required but the specifics are not necessary for understanding the component as a whole.
-This prep-work can float above the return where everything gets packaged together.
-
+A function that returns components is simpler then a new component.
 
 # Moddable Components accept other Components
 
@@ -123,7 +139,7 @@ This prep-work can float above the return where everything gets packaged togethe
 ```javascript
 <Dashboard
   header={<TopMenu user={user}/>}
-  footer={<Footer/>>
+  footer={<Footer/>}>
     <h1>Welcome</h1>
 </Dashboard>
 ```
@@ -138,4 +154,3 @@ This prep-work can float above the return where everything gets packaged togethe
 
 This is a composition pattern using react properties.
 Composition is favored over making a new class or function.
-
