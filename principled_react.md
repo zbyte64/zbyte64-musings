@@ -6,14 +6,14 @@ Use explicit properties to control display modes.
 Card.propTypes = {
   highContrast: PropTypes.bool,
   darkMode: PropTypes.bool,
-  hover: PropTypes.bool,
+  hover: PropTypes.bool
 };
 ```
 
 ## Replaces
 
-* Checking the className to toggle display features.
-* Checking key or index to alternate display features.
+- Checking the `className` to toggle display features.
+- Checking key or index to alternate display features.
 
 ## Why?
 
@@ -21,12 +21,15 @@ This makes controlling the behavior from the outside obvious.
 Inside the component the explicit variable names make it easier to follow what
 each mode entails.
 
-
 # Readable Components have intermediate variables
 
-* Redundant decisions should be moved into their own variables.
-* Larger expressions in the markup should serve to draw attention to important junctions
-* Use descriptive variable names
+- Redundant decisions should be moved into their own variables.
+- Larger expressions in the markup should serve to draw attention to important junctions
+- Use descriptive variable names
+
+```javascript
+const listItems = children.map((x, i( => {<li key={i}>{x}</li>})));
+```
 
 ## Why?
 
@@ -35,11 +38,9 @@ A component may have allot of dependencies that has supporting logic.
 These preparatory steps are required but the specifics are not necessary for understanding the component as a whole.
 This prep-work can float above the return where everything gets packaged together.
 
-
 # Reusable Components support className
 
 Components should accept `className` as a property.
-
 
 ```Javascript
 // styled() wraps a component and injects css via className property
@@ -63,41 +64,39 @@ const LeftCTA = styled(ResponsiveCTA)`
 ## Responsibilities
 
 Parent components should control placement with:
-* width, height
-* grid-area
-* flex
-* margin
+
+- width, height
+- grid-area
+- flex
+- margin
 
 Components should exclusively control their own:
-* padding
-* internal margins
-* color
-* hover
-* fonts
-* grid-template
 
+- padding
+- internal margins
+- color
+- hover
+- fonts
+- grid-template
 
 ## Replaces
 
-* any other property for injecting css at the container level
-
+- any other property for injecting CSS at the container level
 
 ## Why?
 
 Class names is already a robust pattern used everywhere.
-Seperating the concerns in this manner makes the component more predictable in other contexts.
-
+Separating the concerns in this manner makes the component more predictable in other contexts.
 
 # Understandable Components use semaphores
 
 Use a datastructure to store classNames or other state dependent artifacts.
 Map datastructure artifacts to component properties using state variables to navigate the structure.
 
-
 ```javascript
 const classNameSemaphore = {
   true: ["primary-bg white", "light-bg"],
-  false: ["light-bg", "primary-bg white"],
+  false: ["light-bg", "primary-bg white"]
 };
 
 const className = classNameSemaphore[primary][hover];
@@ -105,52 +104,70 @@ const className = classNameSemaphore[primary][hover];
 
 ## Replaces
 
-* Nested if/else statements
-* Chained ternary expressions
+- Nested if/else statements
+- Chained ternary expressions
 
 ## Why?
 
 Concentrates the behavior of selecting visual state and puts it outside the markup.
+
+## Why Not?
+
 Not necessary if the decisions are one level deep.
 
+# Use factories to delegate dependencies
 
-# Use factories to manage dependencies
-
-Use functions to generate markup.
+Use functions to generate intermediate markup.
 
 ```javascript
-const listItems = children.map((x, i( => {<li key={i}>{x}</li>})));
+function statusDisplay(entry) {
+  switch(entry.state) {
+    case "PENDING":
+      return <Loading percentage={entry.percentageComplete}/>;
+    case "SUBMITTED"
+      return <Next receipt={entry.id}/>;
+    case "ERROR":
+      return <Error message={entry.msg}/>;
+  }
+}
 ```
 
 ## Replaces
 
-* Inline expressions in the return markup
-* Proxy components that encode business logic
+- Complex expressions in the return markup
+- Proxy components that encode business logic
 
 ## Why?
 
-A function that returns components is simpler then a new component.
+- A function that returns components is simpler then a new component
+- Moves implementation logic out of the main markup
 
-# Moddable Components accept other Components
+## Why Not?
 
-* children property for single slot inclusion
-* explicit properties for specifying slots
+- Adds interruption to reading flow
+- Avoid factorizing entire component
+
+# Modifiable Components accept other Components
+
+- children property for single slot inclusion
+- explicit properties for specifying slots
 
 ```javascript
-<Dashboard
-  header={<TopMenu user={user}/>}
-  footer={<Footer/>}>
-    <h1>Welcome</h1>
+<Dashboard header={<TopMenu user={user} />} footer={<Footer />}>
+  <h1>Welcome</h1>
 </Dashboard>
 ```
 
 ## Replaces
 
-* copying entire component trees
-* passing in css
-* css selecting children
+- copying entire component trees
+- passing in CSS
+- CSS selecting children with classNames
 
 ## Why?
 
-This is a composition pattern using react properties.
-Composition is favored over making a new class or function.
+Composition via React properties gives direct control over styling and behavior.
+
+## Why Not?
+
+The parent component may require certain behaviors of it's child components. Ideally the components passed in via properties would be wrapped in a component that adds the needed functionality, but additional coordination maybe required, like signaling a hover visual state. Anyway we look at it, this pattern tends towards imposing additional constraints on it's components.
