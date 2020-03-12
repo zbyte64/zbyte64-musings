@@ -6,7 +6,8 @@ Use explicit properties to control display modes.
 Card.propTypes = {
   highContrast: PropTypes.bool,
   darkMode: PropTypes.bool,
-  hover: PropTypes.bool
+  hover: PropTypes.bool,
+  flip: PropTypes.bool
 };
 ```
 
@@ -91,7 +92,7 @@ Separating the concerns in this manner makes the component more predictable in o
 # Understandable Components use semaphores
 
 Use a datastructure to store classNames or other state dependent artifacts.
-Map datastructure artifacts to component properties using state variables to navigate the structure.
+Map datastructure artifacts to component properties using (state) variables to navigate the structure.
 
 ```javascript
 const classNameSemaphore = {
@@ -99,7 +100,7 @@ const classNameSemaphore = {
   false: ["light-bg", "primary-bg white"]
 };
 
-const className = classNameSemaphore[primary][hover];
+const className = _.get(classNameSemaphore, [primary, hover], "");
 ```
 
 ## Replaces
@@ -109,11 +110,12 @@ const className = classNameSemaphore[primary][hover];
 
 ## Why?
 
-Concentrates the behavior of selecting visual state and puts it outside the markup.
+Complex decision rules are often better represented as data than a series of conditionals.
 
 ## Why Not?
 
-Not necessary if the decisions are one level deep.
+- Not necessary if the decisions are one level deep.
+- May create adhoc Domain Specific Language
 
 # Use factories to delegate dependencies
 
