@@ -1,6 +1,9 @@
 # Predictable Components use explicit display flags
 
 Use explicit properties to control display modes.
+This makes controlling the behavior from the outside obvious.
+Inside the component the explicit variable names make it easier to follow what
+each mode entails.
 
 ```javascript
 Card.propTypes = {
@@ -14,34 +17,24 @@ Card.propTypes = {
 ## Replaces
 
 - Checking the `className` to toggle display features.
-- Checking key or index to alternate display features.
-
-## Why?
-
-This makes controlling the behavior from the outside obvious.
-Inside the component the explicit variable names make it easier to follow what
-each mode entails.
+- Inferring display features from key or other conceptually different properties.
 
 # Readable Components have intermediate variables
 
-- Redundant decisions should be moved into their own variables.
-- Larger expressions in the markup should serve to draw attention to important junctions
-- Use descriptive variable names
+Move redundant decisions into their own variables with descriptive names.
+Leave larger expressions in the markup to draw attention to important junctions.
+This encourages your component to read like a recipe.
+Requirements in the beginning, details in the middle, returned results at the end.
 
 ```javascript
 const listItems = children.map((x, i( => {<li key={i}>{x}</li>})));
 ```
 
-## Why?
-
-Encourages your component to read like a recipe.
-A component may have allot of dependencies that has supporting logic.
-These preparatory steps are required but the specifics are not necessary for understanding the component as a whole.
-This prep-work can float above the return where everything gets packaged together.
-
 # Reusable Components support className
 
 Components should accept `className` as a property.
+Other tools, like emotion, use `className` to attach other properties like `css`.
+Additionally, `className` allows handing off placement concerns to the parent component.
 
 ```Javascript
 // styled() wraps a component and injects css via className property
@@ -49,9 +42,11 @@ Components should accept `className` as a property.
 const ResponsiveCTA = styled.div`
     padding: 20px;
 `;
+// we can add styles at rendering time
+const renderedCTAWithMargins = <ResponsiveCTA css={{marginBottom: "20px"}}>Click Me</ResponsiveCTA>
 
 
-// parent component wraps for placement
+// or extend as a new component
 const LeftCTA = styled(ResponsiveCTA)`
     float: left;
     margin: 30px 50px 30px 0px;
@@ -62,7 +57,8 @@ const LeftCTA = styled(ResponsiveCTA)`
   `;
 ```
 
-## Responsibilities
+The following are general rules for splitting CSS logic between the component itself and the parent.
+If you need the component in another context but this isn't enough, consider forking or supporting composition.
 
 Parent components should control placement with:
 
@@ -80,19 +76,10 @@ Components should exclusively control their own:
 - fonts
 - grid-template
 
-## Replaces
-
-- any other property for injecting CSS at the container level
-
-## Why?
-
-Class names is already a robust pattern used everywhere.
-Separating the concerns in this manner makes the component more predictable in other contexts.
-
 # Understandable Components use semaphores
 
-Use a datastructure to store classNames or other state dependent artifacts.
-Map datastructure artifacts to component properties using (state) variables to navigate the structure.
+Use ternaries or datastructure as semaphores to route state to display artifacts.
+Complex decision rules are often better represented as data than a series of conditionals or even a single if/else statement.
 
 ```javascript
 const classNameSemaphore = {
@@ -101,75 +88,40 @@ const classNameSemaphore = {
 };
 
 const className = _.get(classNameSemaphore, [primary, hover], "");
+const border = hover ? "primary" : "secondary";
 ```
-
-## Replaces
-
-- Nested if/else statements
-- Chained ternary expressions
-
-## Why?
-
-Complex decision rules are often better represented as data than a series of conditionals.
-
-## Why Not?
-
-- Not necessary if the decisions are one level deep.
-- May create adhoc Domain Specific Language
 
 # Use factories to delegate dependencies
 
-Use functions to generate intermediate markup.
+Use functions to encapsulate a series of decisions generate intermediate markup.
 
 ```javascript
+// decide which component to display along with properties
+const [loadState, setLoadState] = useState(true);
+
 function statusDisplay(entry) {
-  switch(entry.state) {
+  if (loadState) return null;
+  switch (entry.state) {
     case "PENDING":
-      return <Loading percentage={entry.percentageComplete}/>;
-    case "SUBMITTED"
-      return <Next receipt={entry.id}/>;
+      return <ProgressBar percentage={entry.percentageComplete} />;
+    case "SUBMITTED":
+      return <Invoice receipt={entry.id} />;
     case "ERROR":
-      return <Error message={entry.msg}/>;
+      return <Error message={entry.msg} />;
   }
 }
 ```
 
-## Replaces
-
-- Complex expressions in the return markup
-- Proxy components that encode business logic
-
-## Why?
-
-- A function that returns components is simpler then a new component
-- Moves implementation logic out of the main markup
-
-## Why Not?
-
-- Adds interruption to reading flow
-- Avoid factorizing entire component
-
 # Modifiable Components accept other Components
 
-- children property for single slot inclusion
-- explicit properties for specifying slots
+Most components we build should not be modifiable.
+But components we see often or as part of a style guide should have a flexible code analogue available to the developer.
+Composition via React properties gives direct control over styling and behavior.
+Use the `children` property to accept a "main" component to display inside another component.
+For multiple sections use an explicit property for each section to be displayed inside the component.
 
 ```javascript
 <Dashboard header={<TopMenu user={user} />} footer={<Footer />}>
   <h1>Welcome</h1>
 </Dashboard>
 ```
-
-## Replaces
-
-- copying entire component trees
-- passing in CSS
-- CSS selecting children with classNames
-
-## Why?
-
-Composition via React properties gives direct control over styling and behavior.
-
-## Why Not?
-
-The parent component may require certain behaviors of it's child components. Ideally the components passed in via properties would be wrapped in a component that adds the needed functionality, but additional coordination maybe required, like signaling a hover visual state. Anyway we look at it, this pattern tends towards imposing additional constraints on it's components.
